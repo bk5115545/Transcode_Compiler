@@ -1,6 +1,12 @@
 class TemplateDefinition
 
+    require "logger"
+
     def initialize(pattern, translation)
+        @logger = Logger.new STDOUT, "TemplateDefinition"
+
+        @logger.unknown "test"
+
         @pattern = pattern
         @translation = translation
 
@@ -84,14 +90,15 @@ class DynamicArgument
         if @type_restriction == nil then
             return true
         end
-        if argument.to_i != nil then
+
+        is_int = Integer(argument) rescue nil
+
+        if is_int != nil then
             if @type_restriction.include? "integer" or @type_restriction.include? "int" then
                 return true
             end
-        end
-
-        if @type_restriction.include? "string" or @type_restriction.include? "str" then
-            print("Considering \"#{argument}\" as string\n")
+        elsif @type_restriction.include? "string" or @type_restriction.include? "str" then
+            print("Considering \"#{argument}\" as variable/string\n")
             return true
         end
 

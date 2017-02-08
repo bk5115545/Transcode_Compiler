@@ -24,9 +24,10 @@ class Compiler
                         output << template.translate(tokens)
                         match = true
                     end
+                    break if match
                 end
                 if !match then
-                    print "Could not match \"#{line} to any templates.  The syntax is probably invalid.\n"
+                    print "\n\nCould not match \"#{line}\" to any templates.  The syntax is probably invalid.\n"
                     return
                 end
             end
