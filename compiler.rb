@@ -32,7 +32,14 @@ class Compiler
                 end
             end
         end
-        print output
+        File.open("output.asm", 'w') { |file|
+            output.each do |out|
+                data = out[0]
+                line = out[1]
+                
+                file.write line
+            end
+        }
     end
 
 end
