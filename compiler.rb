@@ -39,13 +39,14 @@ class Compiler
 
 
         File.open("output.asm", 'w') { |file|
-            file.write ".stack 64\n"
-            file.write ".data\n"
+            file.write ".stack\n"
+            file.write "\n.model flat\n"
+            file.write "\n.data\n"
             data.each do |d|
                 file.write d.to_s + "\n"
             end
 
-            file.write ".code\n"
+            file.write "\n.code\n"
             code.each do |c|
                 file.write c.to_s + "\n"
             end
