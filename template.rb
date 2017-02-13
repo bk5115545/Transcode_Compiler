@@ -2,8 +2,11 @@ class TemplateDefinition
 
     require "logger"
 
-    def initialize(pattern, translation)
+    attr_reader :translation, :pattern
+
+    def initialize(pattern, translation, data_output=false)
         @logger = Logger.new STDOUT, "TemplateDefinition"
+        @logger.level = Logger::DEBUG
 
         @pattern = pattern
         @translation = translation
@@ -12,15 +15,16 @@ class TemplateDefinition
 
         @translation_args = Hash.new
 
+        @data_output = data_output
+
         # generate validation token stream
         pattern.split(" ").each do |token|
             if DynamicArgument.argument? token then
                 @token_pattern << DynamicArgument.new(token)
                 @translation_args[@token_pattern[-1].name] = @token_pattern[-1].value
-            elsif Operator.operator? token then
-                @token_pattern << Operator.new(token)
             else
                 @logger.warn "Unrecognized symbol in TemplateDefinition: \"#{token}\"\n"
+                @token_pattern << token
             end
         end
     end
@@ -33,16 +37,15 @@ class TemplateDefinition
         end
         i=0
         @token_pattern.each do |token|
-            if token.is_a?(Operator) and !(Operator.operator? token_list[i] and Operator.new(token_list[i]).operator == token.operator) then
-                @logger.debug "NODICE:op\n"
-                return false
-            end
-
             if token.is_a?(DynamicArgument) and !(token.valid_type? token_list[i]) then
                 @logger.debug "NODICE:arg\n"
                 return false
             elsif token.is_a?(DynamicArgument) and token.valid_type? token_list[i] then
                 @translation_args[token.name] = token.value
+            elsif !(token.to_s.eql? token_list[i].to_s) then
+                print token.to_s + " " + token_list[i].to_s + "\n"
+                @logger.debug "NODICE:constant mismatch\n"
+                return false
             end
             i+=1
         end
@@ -51,9 +54,6 @@ class TemplateDefinition
     end
 
     def translate(token_list)
-
-        vars = Hash.new
-
         # scan for list of replacement key names
         @translation.split(" ").each do |token|
             token = token.tr(",","")
@@ -97,7 +97,6 @@ class TemplateDefinition
             if in_arg and char == "}" then
                 case current_parse.chars.select { |c| c == ":" }.length
                 when 0
-                    print "\n" + current_parse + "\n"
                     result << @translation_args[current_parse].to_s
                 when 1
                     result << @translation_args[current_parse[0]]
@@ -115,7 +114,10 @@ class TemplateDefinition
             end
         end
 
-        return vars, result
+        if @data_output then
+            return result, nil
+        end
+        return nil, result
     end
 end
 
@@ -132,6 +134,7 @@ class DynamicArgument
 
     def initialize(string)
         @logger = Logger.new STDOUT, "DynamicArgument"
+        @logger.level = Logger::WARN
 
         @name = nil
         @type_restriction = nil
@@ -185,27 +188,6 @@ class DynamicArgument
         if string[0] == "{" && string[-1] == "}" && string[1..-2] != nil then
             return true
         end
-        return false
-    end
-end
-
-class Operator
-    # require "logger"
-
-    attr_reader :operator
-
-    def initialize(string)
-        # @logger = Logger.new STDOUT, "Operator"
-        @operator = string
-    end
-
-    def self.operator?(string)
-        print "Checking if #{string} is an operator."
-        if ["+","-","=","*","/"].include? string then
-            print "... true\n"
-            return true
-        end
-        print "... false\n"
         return false
     end
 end

@@ -13,7 +13,9 @@ class Compiler
 
         require_relative "tokenizer.rb"
 
-        output = []
+        data = []
+        code = []
+
         match_targets.each do |target|
             token_lines = Tokenizer.tokenize(target)
             token_lines.each do |line|
@@ -21,10 +23,12 @@ class Compiler
                 match = false
                 templates.each do |template|
                     if template.full_match? tokens then
-                        output << template.translate(tokens)
+                        parts = template.translate(tokens)
+                        data << parts[0] if !parts[0].nil?
+                        code << parts[1] if !parts[1].nil?
                         match = true
+                        break
                     end
-                    break if match
                 end
                 if !match then
                     print "\n\nCould not match \"#{line}\" to any templates.  The syntax is probably invalid.\n"
@@ -32,12 +36,18 @@ class Compiler
                 end
             end
         end
+
+
         File.open("output.asm", 'w') { |file|
-            output.each do |out|
-                data = out[0]
-                line = out[1]
-                
-                file.write line
+            file.write ".stack 64\n"
+            file.write ".data\n"
+            data.each do |d|
+                file.write d.to_s + "\n"
+            end
+
+            file.write ".code\n"
+            code.each do |c|
+                file.write c.to_s + "\n"
             end
         }
     end
