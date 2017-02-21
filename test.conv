@@ -1,3 +1,11 @@
 int x
-x = 2 + 2
+x = 2 + 55
 print_int x
+
+int x = 100
+x = 100
+print_int x
+
+int y = x
+y = x + 2
+print_int y
