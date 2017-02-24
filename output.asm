@@ -1,17 +1,19 @@
-.data
-x SDWORD 5
 
-.code
-main PROC
-    ; add 2 and 4
-    ; store into x
-    mov eax, 2
-    add eax, 4
-    mov x, eax
+section .data
+x DB 5
 
-    mov eax, x
-    add eax, 5
-    mov x, eax
-main ENDP
+global _start
+section .text
+_start:
 
-END
+; add 2 and 4
+; store into x
+mov eax, 2
+add eax, 4
+mov [rel x], eax
+
+mov eax, [rel x]
+add eax, 5
+mov [rel x], eax
+
+ret

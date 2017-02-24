@@ -211,15 +211,14 @@ class Compiler
 
     def finalize(filename)
         File.open(filename, 'w') { |file|
-            file.write ".stack\n"
-            file.write "\n.model flat\n"
-            file.write "\n.data\n"
+            file.write "\nsection .data\n"
             @data.each do |key, value|
                 file.write value.to_s
             end
-            file.write "\n"
+            file.write "\n\nglobal _start"
 
-            file.write "\n.code"
+            file.write "\nsection .text"
+            file.write "\n_start:"
             @code.each do |c|
                 file.write c.to_s
             end
