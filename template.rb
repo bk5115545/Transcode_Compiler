@@ -4,18 +4,18 @@ class TemplateDefinition
 
     attr_reader :translation, :pattern
 
-    def initialize(pattern, translation, data_output=false)
+    def initialize(pattern, code_translation, data_translation="")
         @logger = Logger.new STDOUT, "TemplateDefinition"
         @logger.level = Logger::DEBUG
 
         @pattern = pattern
-        @translation = translation
+        @code_translation = code_translation
 
         @token_pattern = []
 
         @translation_args = Hash.new
 
-        @data_output = data_output
+        @data_translation = data_translation
 
         # generate validation token stream
         pattern.split(" ").each do |token|
@@ -29,7 +29,8 @@ class TemplateDefinition
         end
     end
 
-    def full_match?(token_list)
+    def full_match?(string)
+        token_list = string.split(" ")
         @logger.info "Matching agianst " + token_list.to_s
         if token_list.length != @token_pattern.length then
             @logger.info "Template for #{@pattern} was not satasified.\n"
@@ -43,7 +44,6 @@ class TemplateDefinition
             elsif token.is_a?(DynamicArgument) and token.valid_type? token_list[i] then
                 @translation_args[token.name] = token.value
             elsif !(token.to_s.eql? token_list[i].to_s) then
-                print token.to_s + " " + token_list[i].to_s + "\n"
                 @logger.debug "NODICE:constant mismatch\n"
                 return false
             end
@@ -53,9 +53,20 @@ class TemplateDefinition
         return true
     end
 
-    def translate(token_list)
-        # scan for list of replacement key names
-        @translation.split(" ").each do |token|
+    def translate(compiler, string)
+        token_list = string.split(" ")
+
+        compiler.transaction_begin()
+
+        # translate data segment additions first so that we can validate that a name exists in the binary
+
+        # hashtable has everything we need to fufill this translation
+
+        translate_data(compiler, string)
+
+        # all variables referneced in the token stream are going to be defined in the binary now
+
+        @code_translation.split(" ").each do |token|
             token = token.tr(",","")
 
             if DynamicArgument.argument? token then
@@ -68,56 +79,95 @@ class TemplateDefinition
                     name = token
                 when 1
                     name = token[0]
-                    type = token[1] # reg or mem :: will matter when i actually do the dynamic register resolution and memory resolution
+                    type = token[1] # reg or mem :: will matter when i actually do the dynamic register resolution and memory allocation
                 when 2
                     name = token[0]
                     needs_resolve << token
                 end
 
-                if !@translation_args.include? name then
-                    @translation_args[name] = nil
+                if @translation_args[name].to_i.nil? && !compiler.has_data(@translation_args[name]) then
+                    compiler.throw_warning("Trying to use \"#{@translation_args[name]}\" before it is defined.  This is not necessarily a problem.")
                 end
             end
         end
-
-        # we have all the variables required for translation so lets populate the hashtable with generated placeholders
-        # TODO(bk5115545)
 
         # hashtable has everything we need to fufill this translation
-        # so translate
-        result = ""
-        in_arg = false
-        current_parse = ""
+        translate_code(compiler, string)
 
-        @translation.chars.each do |char|
-            if char == "\n" then
-                result << "\n"
-                next
-            end
-            if in_arg and char == "}" then
-                case current_parse.chars.select { |c| c == ":" }.length
-                when 0
-                    result << @translation_args[current_parse].to_s
-                when 1
-                    result << @translation_args[current_parse[0]]
-                when 2
-                    result << @translation_args[current_parse[0]]
+        compiler.transaction_commit(0)
+    end
+
+    def translate_data(compiler, string)
+        @data_translation.split("\n").each do |line|
+            result = ""
+            in_arg = false
+            current_parse = ""
+
+            dynamic_defined = line.split(" ")[0].tr("{","").tr("}","") # always the first word
+            symbol = @translation_args[dynamic_defined].to_s
+
+            line.chars.each do |char|
+                if char == "\n" then
+                    result << "\n"
+                    next
                 end
-                current_parse = ""
-                in_arg = false
-            elsif in_arg then
-                current_parse << char
-            elsif char == "{" and !in_arg then
-                in_arg = true
-            else
-                result << char
+                if in_arg and char == "}" then
+                    case current_parse.chars.select { |c| c == ":" }.length
+                    when 0
+                        result << @translation_args[current_parse].to_s
+                    when 1
+                        result << @translation_args[current_parse[0]]
+                    when 2
+                        result << @translation_args[current_parse[0]]
+                    end
+                    current_parse = ""
+                    in_arg = false
+                elsif in_arg then
+                    current_parse << char
+                elsif char == "{" and !in_arg then
+                    in_arg = true
+                else
+                    result << char
+                end
             end
-        end
 
-        if @data_output then
-            return result, nil
+            compiler.add_data(symbol, result)
         end
-        return nil, result
+    end
+
+    def translate_code(compiler, string)
+        @code_translation.split("\n").each do |line|
+            result = ""
+            in_arg = false
+            current_parse = ""
+
+
+            line.chars.each do |char|
+                if char == "\n" then
+                    result << "\n"
+                    next
+                end
+                if in_arg and char == "}" then
+                    case current_parse.chars.select { |c| c == ":" }.length
+                    when 0
+                        result << @translation_args[current_parse].to_s
+                    when 1
+                        result << @translation_args[current_parse[0]]
+                    when 2
+                        result << @translation_args[current_parse[0]]
+                    end
+                    current_parse = ""
+                    in_arg = false
+                elsif in_arg then
+                    current_parse << char
+                elsif char == "{" and !in_arg then
+                    in_arg = true
+                else
+                    result << char
+                end
+            end
+            compiler.add_code result
+        end
     end
 end
 

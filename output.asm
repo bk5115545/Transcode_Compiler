@@ -3,18 +3,17 @@
 .model flat
 
 .data
-x SDWORD 0
+x SDWORD 5
 
 .code
-; add 2 and 2
+
+; add 2 and 4
 ; store into x
-mov eax, 0
-add eax, 2
-add eax, 2
+mov eax, 2
+add eax, 4
 mov x, eax
 
-; print x
-mov ah, 9
-mov edx, x
-int 21h
+mov eax, x
+add eax, 5
+mov x, eax
 
