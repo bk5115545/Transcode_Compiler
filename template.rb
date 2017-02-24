@@ -1,11 +1,11 @@
-class TemplateDefinition
+class SimpleTemplateDefinition
 
     require "logger"
 
     attr_reader :translation, :pattern
 
-    def initialize(pattern, code_translation, data_translation="")
-        @logger = Logger.new STDOUT, "TemplateDefinition"
+    def initialize(pattern: "", code_translation: "", data_translation: "", optimization_level: 0)
+        @logger = Logger.new STDOUT, "SimpleTemplateDefinition"
         @logger.level = Logger::DEBUG
 
         @pattern = pattern
@@ -23,7 +23,7 @@ class TemplateDefinition
                 @token_pattern << DynamicArgument.new(token)
                 @translation_args[@token_pattern[-1].name] = @token_pattern[-1].value
             else
-                @logger.warn "Unrecognized symbol in TemplateDefinition: \"#{token}\"\n"
+                @logger.warn "Unrecognized symbol in SimpleTemplateDefinition: \"#{token}\"\n"
                 @token_pattern << token
             end
         end
