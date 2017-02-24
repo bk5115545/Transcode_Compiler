@@ -54,14 +54,9 @@ class TemplateDefinition
     end
 
     def translate(compiler, string)
-        token_list = string.split(" ")
-
         compiler.transaction_begin()
 
         # translate data segment additions first so that we can validate that a name exists in the binary
-
-        # hashtable has everything we need to fufill this translation
-
         translate_data(compiler, string)
 
         # all variables referneced in the token stream are going to be defined in the binary now

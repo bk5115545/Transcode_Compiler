@@ -81,8 +81,14 @@ class Compiler
     end
 
     def has_data(symbol)
-        if @data[symbol].nil?
-            return false
+        if in_transaction() then
+            if @data[symbol].nil? || @data_temp[symbol].nil? then
+                return false
+            end
+        else
+            if @data[symbol].nil? then
+                return false
+            end
         end
         return true
     end
@@ -112,7 +118,7 @@ class Compiler
             @code_temp = []
 
             @data_transactions << @data_temp
-            @data_temp = @data # forward data into transaction to check for variable overwrites
+            @data_temp = @data.merge(@data_temp) # forward data into transaction to check for variable overwrites
 
             @token_index_transactions << @token_index_temp
         end
