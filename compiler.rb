@@ -2,7 +2,7 @@
 
 class Compiler
 
-    def initialize(source_file)
+    def initialize(source_file, dest_file)
 
         @code = []
         @data = {}
@@ -29,10 +29,8 @@ class Compiler
         src = File.read(source_file).tr("\r","")
         @token_source = src.split("\n")
 
-        require_relative "tokenizer.rb"
-
         @token_source.each do |target|
-            token_lines = Tokenizer.tokenize(target)
+            token_lines = target.tr("\r","").split("\n")
             token_lines.each do |line|
                 template = @template_database.find_match(line)
                 if template then
@@ -47,7 +45,7 @@ class Compiler
             end
         end
 
-        finalize("output.asm")
+        finalize(dest_file)
     end
 
     def in_transaction()
@@ -214,18 +212,24 @@ class Compiler
             file.write "\nsection .data\n"
             @data.each do |key, value|
                 file.write value.to_s
+                file.write "\n"
             end
-            file.write "\n\nglobal _start"
+            file.write "\n\nglobal main"
 
             file.write "\nsection .text"
-            file.write "\n_start:"
+            file.write "\nmain:"
             @code.each do |c|
                 file.write c.to_s
+                file.write "\n"
             end
+
+            file.write "; Program finished. Returning exit code to OS\n"
+            file.write "mov rdi, 0\n"
+            file.write "call exit\n"
         }
     end
 
 
 end
 
-Compiler.new("test.conv")
+Compiler.new("test.conv", "nasm_test/output.asm")
