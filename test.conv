@@ -1,2 +1,4 @@
-string string = "Hello World"
-print_string string
+int x = 5
+x = 2 + 4
+x = 4
+x = x + 5

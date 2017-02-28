@@ -23,7 +23,7 @@ class Compiler
 
         # load templates
         require_relative "template_data.rb"
-        @template_database = TemplateStorage.new {}
+        @template_database = TemplateStorage.new(self)
 
         # load source file
         src = File.read(source_file).tr("\r","")
@@ -212,15 +212,13 @@ class Compiler
             file.write "\nsection .data\n"
             @data.each do |key, value|
                 file.write value.to_s
-                file.write "\n"
             end
-            file.write "\n\nglobal main"
+            file.write "\nglobal main"
 
             file.write "\nsection .text"
             file.write "\nmain:"
             @code.each do |c|
                 file.write c.to_s
-                file.write "\n"
             end
 
             file.write "; Program finished. Returning exit code to OS\n"
@@ -232,4 +230,4 @@ class Compiler
 
 end
 
-Compiler.new("test.conv", "nasm_test/output.asm")
+Compiler.new("test.conv", "ignored/nasm_test/output.asm")
