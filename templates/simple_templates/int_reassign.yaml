@@ -1,0 +1,7 @@
+pattern: |
+  {0:string} = {1:int}
+
+code_translation: |
+  ; {0} = {1}
+  mov [rel {0}], {1}
+  

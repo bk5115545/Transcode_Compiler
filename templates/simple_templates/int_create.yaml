@@ -1,0 +1,6 @@
+pattern: |
+  int {0:string}
+
+data_translation: |
+  {0}: DB 0
+  

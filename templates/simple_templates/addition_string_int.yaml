@@ -1,0 +1,11 @@
+pattern: |
+  {0:string} = {1:string} + {2:int}
+
+code_translation: |
+
+  ; add {1} and {2}
+  ; store into {0}
+  mov eax, [rel {1}]
+  add eax, {2}
+  mov [rel {0}], eax
+  

@@ -1,0 +1,4 @@
+pattern: |
+  int {0:string} = {1:int}
+data_translation: |
+   {0}: DB {1}
