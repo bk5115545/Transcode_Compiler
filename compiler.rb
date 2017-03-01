@@ -124,24 +124,35 @@ class Compiler
 
 end
 
-# Compile to nasm assembly
 
-Compiler.new("test.conv", "build/output.asm")
+unless ARGV.length == 2 then
+  print "Error: Incorrect number of arguments.\n"
+  print "Usage: ruby compiler.rb source_file dest_binary"
+  exit
+end
+
+source_arg = ARGV[0]
+dest_binary = ARGV[1]
+
+temp_name = File.join("build", source_arg.split(".")[0])
+
+# Compile to nasm assembly
+Compiler.new(source_arg, temp_name)
 
 
 # assemble
-assemble_result = `nasm -f elf64 build/output.asm -o build/output.o`
+assemble_result = `nasm -f elf64 "#{temp_name}" -o "#{temp_name}.o"`
 
 # if assembly success then build/link with C libraries
 if assemble_result.length() > 0 then
   # failed to assemble
   print assemble_result
 else
-  build_result = `gcc -o test build/output.o`
+  build_result = `gcc -o #{dest_binary} "#{temp_name}.o"`
   if build_result.length() > 0 then
     # failed to build
     print build_result
   else
-    print "Build Successful!"
+    print "Build Successful!\n\n"
   end
 end

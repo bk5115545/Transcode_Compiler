@@ -1,0 +1,7 @@
+int x = 30
+int y = 40
+
+int z
+z = x + y
+
+print_int z

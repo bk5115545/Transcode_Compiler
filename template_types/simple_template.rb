@@ -94,6 +94,7 @@ class SimpleTemplateDefinition
 
       symbol = line.split(" ")[0].tr("{","").tr("}","") # always the first word
       symbol = symbol.tr(":","")
+      symbol = @translation_args[symbol]
 
       line.chars.each do |char|
         if char == "\n" then
