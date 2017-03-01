@@ -27,7 +27,7 @@ class SimpleTemplateDefinition
         @token_pattern << DynamicArgument.new(token)
         @translation_args[@token_pattern[-1].name] = @token_pattern[-1].value
       else
-        @logger.warn "Unrecognized symbol in SimpleTemplateDefinition: \"#{token}\"\n"
+        # @logger.warn "Unrecognized symbol in SimpleTemplateDefinition: \"#{token}\"\n"
         @token_pattern << token
       end
     end

@@ -124,16 +124,22 @@ class Compiler
 
 end
 
+# Compile to nasm assembly
+
 Compiler.new("test.conv", "build/output.asm")
+
+
+# assemble
 assemble_result = `nasm -f elf64 build/output.asm -o build/output.o`
 
-
+# if assembly success then build/link with C libraries
 if assemble_result.length() > 0 then
   # failed to assemble
   print assemble_result
 else
   build_result = `gcc -o test build/output.o`
   if build_result.length() > 0 then
+    # failed to build
     print build_result
   else
     print "Build Successful!"
