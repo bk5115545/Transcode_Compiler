@@ -59,7 +59,7 @@ class SimpleTemplateDefinition
 
   def translate(transaction, string)
 
-    @externs.each { |extern| transaction.add symbol: "extern", text: extern}
+    @externs.each { |extern| transaction.add symbol: "externs", text: extern}
 
     # translate data segment additions first so that we can validate that a name exists in the binary
     translate_data(transaction, string)
@@ -93,6 +93,7 @@ class SimpleTemplateDefinition
       current_parse = ""
 
       symbol = line.split(" ")[0].tr("{","").tr("}","") # always the first word
+      symbol = symbol.tr(":","")
 
       line.chars.each do |char|
         if char == "\n" then

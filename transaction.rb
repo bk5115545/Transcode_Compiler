@@ -1,6 +1,6 @@
 class Transaction
 
-    def initialize(compiler:, defaults: {"code" => [], "data" => {}, "externs" => []}, parent: nil)
+    def initialize(compiler:, defaults: {"code" => [], "data" => {}, "externs" => ["exit"]}, parent: nil)
       @warnings = []
       @compiler = compiler
       @tracked = defaults.dup

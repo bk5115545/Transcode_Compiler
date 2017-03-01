@@ -101,7 +101,7 @@ class Compiler
   def finalize(filename)
     File.open(filename, 'w') { |file|
 
-      file.write "extern " + @externs.join(", ") + '\n' if @externs.length > 0
+      file.write "extern " + @externs.uniq.join(", ") + "\n" if @externs.uniq.length > 0
 
       file.write "\nsection .data\n"
       @data.each do |key, value|
@@ -124,4 +124,18 @@ class Compiler
 
 end
 
-Compiler.new("test.conv", "ignored/nasm_test/output.asm")
+Compiler.new("test.conv", "build/output.asm")
+assemble_result = `nasm -f elf64 build/output.asm -o build/output.o`
+
+
+if assemble_result.length() > 0 then
+  # failed to assemble
+  print assemble_result
+else
+  build_result = `gcc -o test build/output.o`
+  if build_result.length() > 0 then
+    print build_result
+  else
+    print "Build Successful!"
+  end
+end

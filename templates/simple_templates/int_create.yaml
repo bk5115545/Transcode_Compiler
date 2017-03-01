@@ -2,5 +2,4 @@ pattern: |
   int {0:string}
 
 data_translation: |
-  {0}: DB 0
-  
+  {0}: dd 0

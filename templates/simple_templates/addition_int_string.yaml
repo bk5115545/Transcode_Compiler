@@ -3,7 +3,6 @@ pattern: |
 
 code_translation: |
 
-  mov eax, [{2}]
-  add eax, {1}
+  mov eax, dword [{2}]
+  add eax, dword {1}
   mov [rel {0}], eax
-  

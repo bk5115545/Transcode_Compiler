@@ -1,0 +1,14 @@
+pattern: |
+  print_int {0:string}
+
+externs: |
+  printf
+
+data_translation: |
+  int_pattern: db "%i", 10, 0
+
+code_translation: |
+  mov rsi, qword [{0}]
+  mov rdi, int_pattern
+  xor rax, rax
+  call printf

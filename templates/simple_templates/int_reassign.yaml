@@ -3,5 +3,4 @@ pattern: |
 
 code_translation: |
   ; {0} = {1}
-  mov [rel {0}], {1}
-  
+  mov [rel {0}], dword {1}

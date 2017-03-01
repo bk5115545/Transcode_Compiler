@@ -1,5 +1,6 @@
 int x = 5
 x = 2 + 4
 print_int x
-x = 4
+
 x = x + 5
+print_int x
