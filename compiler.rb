@@ -4,12 +4,15 @@ class Compiler
 
     def initialize(source_file, dest_file)
 
+        @externs = []
         @code = []
         @data = {}
         @code_transactions = []
         @data_transactions = []
+        @externs_transactions = []
         @code_temp = []
         @data_temp = {}
+        @extern_temp = []
         @transaction_counter = 0
 
         @warnings = []
@@ -78,6 +81,20 @@ class Compiler
         end
     end
 
+    def add_extern(symbol)
+        if in_transaction() then
+            if !@externs_temp.include? symbol then
+                @externs_temp << symbol
+            end
+        else
+            if !@externs.include? symbol then
+                @externs << symbol
+            end
+        end
+        return true
+    end
+
+
     def has_data(symbol)
         if in_transaction() then
             if @data[symbol].nil? || @data_temp[symbol].nil? then
@@ -114,6 +131,8 @@ class Compiler
             # we're going to nest transactions (which is fine)
             @code_transactions << @code_temp
             @code_temp = []
+
+            @extern_transactions << @externs + @externs_temp
 
             @data_transactions << @data_temp
             @data_temp = @data.merge(@data_temp) # forward data into transaction to check for variable overwrites
