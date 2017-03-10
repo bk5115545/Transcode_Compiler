@@ -1,0 +1,5 @@
+pattern: |
+  float {0:string}
+
+data_translation: |
+  {0}: dq 0

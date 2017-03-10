@@ -33,7 +33,7 @@ class SimpleTemplateDefinition
     end
   end
 
-  def full_match?(string)
+  def full_match?(transaction, string)
     token_list = string.split(" ")
     @logger.info "Matching agianst " + token_list.to_s
     if token_list.length != @token_pattern.length then
@@ -42,10 +42,10 @@ class SimpleTemplateDefinition
     end
     i=0
     @token_pattern.each do |token|
-      if token.is_a?(DynamicArgument) and !(token.valid_type? token_list[i]) then
+      if token.is_a?(DynamicArgument) and !(token.valid_type? transaction, token_list[i]) then
         @logger.debug "NODICE:arg\n"
         return false
-      elsif token.is_a?(DynamicArgument) and token.valid_type? token_list[i] then
+      elsif token.is_a?(DynamicArgument) and token.valid_type? transaction, token_list[i] then
         @translation_args[token.name] = token.value
       elsif !(token.to_s.eql? token_list[i].to_s) then
         @logger.debug "NODICE:constant mismatch\n"
@@ -121,7 +121,7 @@ class SimpleTemplateDefinition
         end
       end
 
-      transaction.add symbol: "data", text: {symbol.to_s => result}
+      transaction.add symbol: "data", text: {symbol.to_s => [@token_pattern[0], result]}
     end
   end
 
@@ -192,33 +192,46 @@ class DynamicArgument
         parts = string.split(":")
         @name = parts[0]
         @type_restriction = parts[1].split("|")
-        #print("#{@type_restriction}\n")
 
       when 2
         parts = string.split(":")
         @name = parts[0]
         @type_restriction = parts[1].split("|")
-        @target = parts[3].split("|")
+        @target = parts[2].split("|")
     end
     @logger.debug "Loaded DynamicArgument with #{@type_restriction}.\n"
   end
 
-  def valid_type?(argument)
+  def valid_type?(transaction, argument)
     if @type_restriction == nil then
       return true
     end
 
     is_int = Integer(argument) rescue nil
+    is_float = Float(argument) rescue nil
 
-    if is_int != nil then
-      if @type_restriction.include? "integer" or @type_restriction.include? "int" then
+    if is_int != nil || is_float != nil then
+      if !is_int.nil? and @type_restriction.include? "integer" or @type_restriction.include? "int" then
           @value = argument.to_i
+          return true
+        elsif !is_float.nil? and @type_restriction.include? "float" then
+          @value = argument.to_f
           return true
       end
     elsif @type_restriction.include? "string" or @type_restriction.include? "str" then
-      @logger.info "Considering \"#{argument}\" as variable/string\n"
-      @value = argument
-      return true
+      # no type to lookup
+      if @target.nil? then
+        @logger.debug "Considering \"#{argument}\" as variable/string\n"
+        @value = argument
+        return true
+        # need to make sure this variable name points to the correct type in memory
+      elsif (@target.include? "int" or @target.include? "integer") and transaction.type_resolve(argument) == :int then
+        @value = argument
+        return true
+      elsif @target.include? "float" and transaction.type_resolve(argument) == :float then
+        @value = argument
+        return true
+      end
     end
 
     return false

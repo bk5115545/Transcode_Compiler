@@ -1,5 +1,5 @@
 pattern: |
-  {0:string} = {1:int} + {2:string}
+  {0:string} = {1:int} + {2:string:int}
 
 code_translation: |
 

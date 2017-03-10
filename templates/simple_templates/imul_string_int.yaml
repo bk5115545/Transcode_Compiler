@@ -1,0 +1,8 @@
+pattern: |
+  {0:string} = {1:string:int} * {2:int}
+
+code_translation: |
+
+  mov eax, dword [rel {1}]
+  imul eax, dword {2}
+  mov [rel {0}], eax

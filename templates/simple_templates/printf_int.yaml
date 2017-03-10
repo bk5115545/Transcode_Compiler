@@ -1,5 +1,5 @@
 pattern: |
-  print_int {0:string}
+  print_int {0:string:int}
 
 externs: |
   printf

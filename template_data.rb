@@ -45,9 +45,9 @@ class TemplateStorage
   end
 
   # will eventually use my awesome trie to minimize search times
-  def find_match(string)
+  def find_match(context, string)
     @database.each do |template|
-      if template.full_match? string then
+      if template.full_match? context, string then
         return template
       end
     end

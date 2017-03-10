@@ -1,0 +1,22 @@
+pattern: |
+  print_float {0:string:float}
+
+externs: |
+  printf
+
+data_translation: |
+  float_pattern: db "%f", 10, 0
+
+code_translation: |
+  ; rsi = &{0}
+  ; rdi = &float_pattern
+  movq xmm0, qword [{0}]
+  mov rdi, float_pattern
+  ; using 1 vector register
+  mov rax, 1
+  sub rsp, 8
+  ; printf(float_pattern, {0});
+
+  call printf
+
+  add rsp, 8

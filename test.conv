@@ -1,7 +1,6 @@
-int x = 30
-int y = 40
+float x = 100.0
+float y = 200.0
 
-int z
-z = x + y
-
-print_int z
+float z
+z = x * y
+print_float z

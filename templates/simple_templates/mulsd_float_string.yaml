@@ -1,0 +1,9 @@
+pattern: |
+  {0:string} = {1:float} * {2:string:float}
+
+code_translation: |
+
+  movq xmm0, qword {1}
+  movq xmm1, qword [rel {2}]
+  mulsd xmm1, xmm0
+  movq [rel {0}], xmm1

@@ -1,6 +1,6 @@
 class Transaction
 
-    def initialize(compiler:, defaults: {"code" => [], "data" => {}, "externs" => ["exit"]}, parent: nil)
+    def initialize(compiler:, defaults: {"code" => [], "data" => {}, "externs" => ["exit"], "types" => {}}, parent: nil)
       @warnings = []
       @compiler = compiler
       @tracked = defaults.dup
@@ -38,10 +38,21 @@ class Transaction
         # data is a hash instead of an array
         if text.is_a?(Hash) then
           text.each do |key, value|
+            # if there's a type specified we want to track it too
+            if value.is_a?(Array) then
+              type = value[0]
+              value = value[1]
+            end
+
             if @tracked[symbol].has_key(key) then
               throw_warning "Tried to add \"#{text}\" when it should only be in the binary once."
             else
               @tracked[symbol][key] = value
+
+              if @tracked["types"][type].nil? then
+                @tracked["types"][type] = []
+              end
+              @tracked["types"][type] << key
             end
           end
         elsif text.is_a?(Array) then
@@ -64,7 +75,15 @@ class Transaction
 
       elsif text.is_a?(Hash) then
         text.each do |key, value|
+          if value.is_a?(Array) then
+            type = value[0]
+            value = value[1]
+          end
           @tracked[symbol][key] = value
+          if @tracked["types"][type].nil? then
+            @tracked["types"][type] = []
+          end
+          @tracked["types"][type] << key
         end
 
       elsif text.is_a?(Array) then
@@ -78,6 +97,19 @@ class Transaction
 
       return true # added something
       end
+    end
+
+    def type_resolve(symbol)
+      print "Searching for type_of: #{symbol}... "
+      @tracked["types"].each { |key, value|
+        print "#{key}: #{value}"
+        if value.include? symbol then
+          print "#{key}\n\n\n"
+          return key.to_sym
+        end
+      }
+      print "nil\n\n\n"
+      return nil
     end
 
     def throw_warning(text)

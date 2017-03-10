@@ -8,6 +8,8 @@ class Compiler
     @code = []
     @data = {}
 
+    @types = {}
+
     require_relative "transaction.rb"
     @current_transaction = Transaction.new(compiler: self)
 
@@ -27,7 +29,7 @@ class Compiler
     @token_source.each do |target|
       token_lines = target.tr("\r","").split("\n")
       token_lines.each do |line|
-        template = @template_database.find_match(line)
+        template = @template_database.find_match(@current_transaction, line)
         if template then
           @template_database.translate(@current_transaction, template, line)
           match = true
@@ -43,6 +45,7 @@ class Compiler
     @code = @current_transaction.unpack :code
     @data = @current_transaction.unpack :data
     @externs = @current_transaction.unpack :externs
+    @types = @current_transaction.unpack :types
 
     @warnings = @current_transaction.unpack :warnings
     print_warnings()
@@ -63,9 +66,15 @@ class Compiler
     return false
   end
 
-  def add_data(symbol, code)
+  def add_data(type, symbol, code)
     # uniqueness check happens in the transaction that called this method
     @data[symbol] << code
+    if @types[type].nil? then
+      @types[type] = []
+    end
+
+    # this can get pretty slow but it's good for simple type tracking
+    @types[type] << symbol if !@types[type].include? symbol
   end
 
   def add_extern(symbol)
@@ -74,6 +83,15 @@ class Compiler
     end
   end
 
+  def type_resolve(symbol)
+    type = nil
+    @types.each do |key, value|
+      if value.include? symbol then
+        return key
+      end
+    end
+    return type
+  end
 
   def has_data(symbol)
     if @data[symbol].nil? then
@@ -103,13 +121,13 @@ class Compiler
 
       file.write "extern " + @externs.uniq.join(", ") + "\n" if @externs.uniq.length > 0
 
-      file.write "\nsection .data\n"
+      file.write "\nsection .data align=16\n"
       @data.each do |key, value|
         file.write value.to_s + "\n"
       end
       file.write "\nglobal main"
 
-      file.write "\nsection .text"
+      file.write "\nsection .text align=16"
       file.write "\nmain:\n"
       @code.each do |c|
         file.write c.to_s + "\n"

@@ -1,0 +1,6 @@
+pattern: |
+  {0:string} = {1:float}
+
+code_translation: |
+  ; {0} = {1}
+  movq [rel {0}], qword {1}
