@@ -1,0 +1,9 @@
+pattern: |
+  {0:string} = {1:string:int} / {2:string:int}
+
+code_translation: |
+
+  xor edx, edx
+  mov eax, dword [rel {1}]
+  div dword [rel {2}]
+  mov [rel {0}], eax

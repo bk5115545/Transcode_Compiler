@@ -36,8 +36,9 @@ class SimpleTemplateDefinition
   def full_match?(transaction, string)
     token_list = string.split(" ")
     @logger.info "Matching agianst " + token_list.to_s
+    @logger.info "With pattern #{@pattern}"
     if token_list.length != @token_pattern.length then
-      @logger.info "Template for #{@pattern} was not satasified.\n"
+      @logger.info "Template for was not satasified.\n"
       return false
     end
     i=0
