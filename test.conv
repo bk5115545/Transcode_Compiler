@@ -1,6 +1,6 @@
-int x = 4
-int y = 1
+float x = 4.5
+float y = 30.6
 
-int z
-z = 8 / 4
-print_int z
+float z
+z = y * x
+print z

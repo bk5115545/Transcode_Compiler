@@ -1,5 +1,5 @@
 pattern: |
-  print_float {0:string:float}
+  print {0:string:float}
 
 externs: |
   printf
