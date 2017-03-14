@@ -1,0 +1,8 @@
+pattern: |
+  array:int {0:string}, {1:int}
+
+data_translation: |
+  {0}__SIZE: dw {1}
+
+bss_translation: |
+  {0}: resw {1}

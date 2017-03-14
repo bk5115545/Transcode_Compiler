@@ -46,6 +46,7 @@ class Compiler
     @data = @current_transaction.unpack :data
     @externs = @current_transaction.unpack :externs
     @types = @current_transaction.unpack :types
+    @bss = @current_transaction.unpack :bss
 
     @warnings = @current_transaction.unpack :warnings
     print_warnings()
@@ -55,32 +56,6 @@ class Compiler
 
   def add(transaction)
     @current_transaction = transaction
-  end
-
-  def add_code(code)
-    if code.is_a?(Array) then
-      code.each { |val| @code << val }
-      return true
-    end
-
-    return false
-  end
-
-  def add_data(type, symbol, code)
-    # uniqueness check happens in the transaction that called this method
-    @data[symbol] << code
-    if @types[type].nil? then
-      @types[type] = []
-    end
-
-    # this can get pretty slow but it's good for simple type tracking
-    @types[type] << symbol if !@types[type].include? symbol
-  end
-
-  def add_extern(symbol)
-    if !@externs.include? symbol then
-      @externs << symbol
-    end
   end
 
   def type_resolve(symbol)
@@ -115,19 +90,23 @@ class Compiler
     end
   end
 
-
   def finalize(filename)
     File.open(filename, 'w') { |file|
 
       file.write "extern " + @externs.uniq.join(", ") + "\n" if @externs.uniq.length > 0
 
+      file.write "\n\nsection .bss align=16\n"
+      @bss.each do |key, value|
+        file.write value.to_s + "\n"
+      end
+
       file.write "\nsection .data align=16\n"
       @data.each do |key, value|
         file.write value.to_s + "\n"
       end
-      file.write "\nglobal main"
+      file.write "\nglobal main\n"
 
-      file.write "\nsection .text align=16"
+      file.write "\nsection .text align=16\n"
       file.write "\nmain:\n"
       @code.each do |c|
         file.write c.to_s + "\n"

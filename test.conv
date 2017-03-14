@@ -1,6 +1,2 @@
-float x = 4.5
-float y = 30.6
-
-float z
-z = y / x
-print z
+array:int x, 128
+array:int y, 128

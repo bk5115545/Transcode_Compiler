@@ -1,0 +1,7 @@
+arrays (static)
+recursive template parsing
+for loop
+condition (if else)
+function call (no arg passing)
+? dynamic memory using reserved temp
+  - useful for ordering memory operands for vectorized operations

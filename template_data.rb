@@ -24,7 +24,8 @@ class TemplateStorage
         pattern: template["pattern"],
         data_translation: template["data_translation"] || "",
         code_translation: template["code_translation"] || "",
-        externs: template["externs"] || ""
+        externs: template["externs"] || "",
+        bss_translation: template["bss_translation"] || ""
       )
     end
 
@@ -36,10 +37,10 @@ class TemplateStorage
     templates = load_simple_templates()
 
     # non-functional
-    templates << SimpleTemplateDefinition.new(pattern: "string {0:string} = \"{1:string}\"", data_translation: "{0}: db \"{1}\", $")
+    # templates << SimpleTemplateDefinition.new(pattern: "string {0:string} = \"{1:string}\"", data_translation: "{0}: db \"{1}\", $")
 
     # non-functional
-    templates << SimpleTemplateDefinition.new(pattern: "print_string {0:string}", data_translation: "string_pattern db \"%s\", 10, 0", code_translation: "push rbp\nmov rdi, string_pattern\nmov rsi, {0}\nxor rax, rax\ncall printf\npop rbp")
+    # templates << SimpleTemplateDefinition.new(pattern: "print_string {0:string}", data_translation: "string_pattern db \"%s\", 10, 0", code_translation: "push rbp\nmov rdi, string_pattern\nmov rsi, {0}\nxor rax, rax\ncall printf\npop rbp")
 
     return templates
   end
