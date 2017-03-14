@@ -164,7 +164,7 @@ assemble_result = `nasm -f elf64 "#{temp_name}" -o "#{temp_name}.o"`
 # if assembly success then build/link with C libraries
 if assemble_result.length() > 0 then
   # failed to assemble
-  print assemble_result
+  print "#{assemble_result}\n\n"
 else
   build_result = `gcc -o #{dest_binary} "#{temp_name}.o"`
   if build_result.length() > 0 then

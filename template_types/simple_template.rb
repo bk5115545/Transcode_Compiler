@@ -34,7 +34,9 @@ class SimpleTemplateDefinition
   end
 
   def full_match?(transaction, string)
-    token_list = string.split(" ")
+    # split on \b excluding .
+    token_list = string.split(/\s|\b&^.|\s/)
+
     @logger.info "Matching agianst " + token_list.to_s
     @logger.info "With pattern #{@pattern}"
     if token_list.length != @token_pattern.length then

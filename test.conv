@@ -2,5 +2,5 @@ float x = 4.5
 float y = 30.6
 
 float z
-z = y * x
+z = y / x
 print z
