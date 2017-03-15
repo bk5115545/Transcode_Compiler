@@ -7,7 +7,7 @@ class SimpleTemplateDefinition
 
   def initialize(pattern: "", code_translation: "", data_translation: "", externs: "", bss_translation: "", optimization_level: 0)
     @logger = Logger.new STDOUT, "SimpleTemplateDefinition"
-    @logger.level = Logger::INFO
+    @logger.level = Logger::DEBUG
 
     @pattern = pattern
     @code_translation = code_translation
@@ -104,8 +104,11 @@ class SimpleTemplateDefinition
     symbol = line.split(" ")[0]
     start_index = symbol.index("{")
     finish_index = symbol.index("}")
-    symbol = symbol[start_index+1..finish_index-1]
-    symbol = @translation_args[symbol]
+
+    if !(start_index.nil? and finish_index.nil?) then
+      symbol = symbol[start_index+1..finish_index-1]
+      symbol = @translation_args[symbol]
+    end
 
     line.chars.each do |char|
       if char == "\n" then
@@ -131,11 +134,15 @@ class SimpleTemplateDefinition
         result << char
       end
     end
+
+    print "RESULT: #{result}\n\n\n"
+
     return symbol, result
   end
 
   def translate_data(transaction, string)
     @data_translation.split("\n").each do |line|
+      next if line.length == 0
       symbol, result = translate_internal(transaction, string, line)
       transaction.add symbol: "data", text: {symbol.to_s => [@token_pattern[0], result]}
     end
@@ -143,6 +150,7 @@ class SimpleTemplateDefinition
 
   def translate_bss(transaction, string)
     @bss_translation.split("\n").each do |line|
+      next if line.length == 0
       symbol, result = translate_internal(transaction, string, line)
       transaction.add_bss text: {symbol.to_s => [@token_pattern[0], result]}
     end
@@ -150,6 +158,7 @@ class SimpleTemplateDefinition
 
   def translate_code(transaction, string)
     @code_translation.split("\n").each do |line|
+      next if line.length == 0
       symbol, result = translate_internal(transaction, string, line)
       transaction.add symbol: "code", text: result
     end

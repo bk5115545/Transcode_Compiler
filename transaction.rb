@@ -127,9 +127,7 @@ class Transaction
   end
 
   def type_resolve(symbol)
-    print "Searching for type_of: #{symbol}... "
     @tracked["types"].each { |key, value|
-      print "#{key}: #{value}"
       if value.include? symbol then
         return key.to_sym
       end

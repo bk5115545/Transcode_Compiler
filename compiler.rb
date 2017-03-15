@@ -4,6 +4,9 @@ class Compiler
 
   def initialize(source_file, dest_file)
 
+    @source_file = source_file
+    @dest_file = dest_file
+
     @externs = []
     @code = []
     @data = {}
@@ -21,37 +24,6 @@ class Compiler
     # load templates
     require_relative "template_data.rb"
     @template_database = TemplateStorage.new(self)
-
-    # load source file
-    src = File.read(source_file).tr("\r","")
-    @token_source = src.split("\n")
-
-    @token_source.each do |target|
-      token_lines = target.tr("\r","").split("\n")
-      token_lines.each do |line|
-        template = @template_database.find_match(@current_transaction, line)
-        if template then
-          @template_database.translate(@current_transaction, template, line)
-          match = true
-        end
-
-        if !match then
-          print "\n\nCould not match \"#{line}\" to any templates.  The syntax is probably invalid.\n"
-          return
-        end
-      end
-    end
-
-    @code = @current_transaction.unpack :code
-    @data = @current_transaction.unpack :data
-    @externs = @current_transaction.unpack :externs
-    @types = @current_transaction.unpack :types
-    @bss = @current_transaction.unpack :bss
-
-    @warnings = @current_transaction.unpack :warnings
-    print_warnings()
-
-    finalize(dest_file)
   end
 
   def add(transaction)
@@ -118,13 +90,49 @@ class Compiler
     }
   end
 
+  def compile()
+    # load source file
+    src = File.read(@source_file).tr("\r","")
+    @token_source = src.split("\n")
+
+    @token_source.each do |target|
+      token_lines = target.tr("\r","").split("\n")
+      token_lines.each do |line|
+        template = @template_database.find_match(@current_transaction, line)
+        if template then
+          @template_database.translate(@current_transaction, template, line)
+          match = true
+        end
+
+        if !match then
+          @kill_bit = 1
+          print "\n\nCould not match \"#{line}\" to any templates.  The syntax is probably invalid.\n"
+          return
+        end
+      end
+    end
+
+    @code = @current_transaction.unpack :code
+    @data = @current_transaction.unpack :data
+    @externs = @current_transaction.unpack :externs
+    @types = @current_transaction.unpack :types
+    @bss = @current_transaction.unpack :bss
+
+    @warnings = @current_transaction.unpack :warnings
+
+    finalize(@dest_file)
+  end
+
+  def has_error?()
+    return @kill_bit != 0
+  end
 
 end
 
 
 unless ARGV.length == 2 then
-  print "Error: Incorrect number of arguments.\n"
-  print "Usage: ruby compiler.rb source_file dest_binary"
+  print "\nError: Incorrect number of arguments.\n"
+  print "Usage: ruby compiler.rb source_file dest_binary\n"
   exit
 end
 
@@ -134,7 +142,14 @@ dest_binary = ARGV[1]
 temp_name = File.join("build", source_arg.split(".")[0])
 
 # Compile to nasm assembly
-Compiler.new(source_arg, temp_name)
+compiler = Compiler.new(source_arg, temp_name)
+compiler.compile()
+
+# If we didn't sucessfully compile
+if compiler.has_error? then
+  # kill
+  exit 1
+end # otherwise call assembler and linker
 
 
 # assemble
