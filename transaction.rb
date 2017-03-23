@@ -134,6 +134,14 @@ class Transaction
     return @tracked["index"]
   end
 
+  def has_next_line()
+    return @compiler.has_line_after(index: @tracked["index"])
+  end
+
+  def next_line()
+    return @compiler.get_line(index: @tracked["index"])
+  end
+
   def type_resolve(symbol)
     @tracked["types"].each { |key, value|
       if value.include? symbol then

@@ -64,7 +64,6 @@ class Compiler
   def next_line()
     return nil if !has_next_line()
     @token_index += 1
-    print @token_index
     return @token_source[@token_index]
   end
 
