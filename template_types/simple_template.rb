@@ -50,7 +50,7 @@ class SimpleTemplateDefinition
     i=0
     @token_pattern.each do |token|
       if token.is_a?(DynamicArgument) and !(token.valid_type? transaction, token_list[i]) then
-        @logger.debug "NODICE:arg:\t \"#{token.type_restriction}\" =/= \"#{token_list[i].to_s}\"\n"
+        @logger.debug "NODICE:arg:\t #{token.type_restriction} =/= \"#{token_list[i].to_s}\"\n"
         return false
       elsif token.is_a?(DynamicArgument) and token.valid_type? transaction, token_list[i] then
         @translation_args[token.name] = token.value
@@ -134,8 +134,6 @@ class SimpleTemplateDefinition
         result << char
       end
     end
-
-    print "RESULT: #{result}\n\n\n"
 
     return symbol, result
   end

@@ -1,9 +1,8 @@
-int j = 20
-float k=10.0
+
 int m= 15
 int k =10
 
 int z
 
-z=m+k
+z=m-k
 print z

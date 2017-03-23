@@ -2,7 +2,7 @@ class Transaction
 
   require_relative "utils.rb"
 
-  def initialize(compiler:, defaults: {"code" => [], "data" => {}, "externs" => ["exit"], "types" => {}, "bss" => {} }, parent: nil)
+  def initialize(compiler:, defaults: {"code" => [], "data" => {}, "externs" => ["exit"], "types" => {}, "bss" => {}, "index" => 0 }, parent: nil)
     @warnings = []
     @compiler = compiler
     @tracked = defaults.dup
@@ -10,7 +10,7 @@ class Transaction
   end
 
   def create_child()
-    return Transaction.new(defaults: @tracked, parent: self)
+    return Transaction.new(compiler: @compiler, defaults: @tracked, parent: self)
   end
 
   def commit()
@@ -22,7 +22,7 @@ class Transaction
       @compiler.add self
     else
       @tracked.each do |key, value|
-        @parent.add symbol: key, text: value, verify_unique: false if key == "code"
+        @parent.add symbol: key, text: value
       end
     end
   end
@@ -124,6 +124,14 @@ class Transaction
 
     return true # added something
     end
+  end
+
+  def set_index(index:)
+    @tracked["index"] = index
+  end
+
+  def get_index()
+    return @tracked["index"]
   end
 
   def type_resolve(symbol)

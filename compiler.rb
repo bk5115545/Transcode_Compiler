@@ -18,7 +18,9 @@ class Compiler
 
     @kill_bit = 0 # TODO
 
-    @token_source = []
+    # load source file
+    src = File.read(source_file).tr("\r","")
+    @token_source = src.split("\n")
     @token_index = 0
 
     # load templates
@@ -47,12 +49,22 @@ class Compiler
   end
 
   def has_next_line()
-    return @token_index - 1 < @token_source.length()
+    return @token_index < @token_source.length()
+  end
+
+  def has_line_after(index:)
+    return index < @token_source.length()
+  end
+
+  def get_line(index:)
+    return nil if !has_line_after(index-1)
+    return @token_source[index] if index < @token_source.length()
   end
 
   def next_line()
     return nil if !has_next_line()
     @token_index += 1
+    print @token_index
     return @token_source[@token_index]
   end
 
@@ -90,37 +102,40 @@ class Compiler
     }
   end
 
-  def compile()
-    # load source file
-    src = File.read(@source_file).tr("\r","")
-    @token_source = src.split("\n")
-
-    @token_source.each do |target|
-      token_lines = target.tr("\r","").split("\n")
-      token_lines.each do |line|
-        template = @template_database.find_match(@current_transaction, line)
-        if template then
-          @template_database.translate(@current_transaction, template, line)
-          match = true
-        end
-
-        if !match then
-          @kill_bit = 1
-          print "\n\nCould not match \"#{line}\" to any templates.  The syntax is probably invalid.\n"
+  def compile(transaction: @current_transaction)
+    if has_next_line() then
+      loop do
+        line = next_line()
+        break if line.nil?
+        transaction.set_index index: @token_index
+        @kill_bit = compile_line(transaction: transaction, line: line)
+        @token_index = transaction.get_index()
+        if @kill_bit == 1 then
           return
         end
       end
     end
 
-    @code = @current_transaction.unpack :code
-    @data = @current_transaction.unpack :data
-    @externs = @current_transaction.unpack :externs
-    @types = @current_transaction.unpack :types
-    @bss = @current_transaction.unpack :bss
+    @code = transaction.unpack :code
+    @data = transaction.unpack :data
+    @externs = transaction.unpack :externs
+    @types = transaction.unpack :types
+    @bss = transaction.unpack :bss
 
-    @warnings = @current_transaction.unpack :warnings
+    @warnings = transaction.unpack :warnings
 
     finalize(@dest_file)
+  end
+
+  def compile_line(transaction: nil, line: nil)
+    template = @template_database.find_match(transaction: transaction, line: line)
+    if template then
+      @template_database.translate(transaction, template, line)
+      return 0
+    else
+      print "\n\nCould not match \"#{line}\" to any templates.  The syntax is probably invalid.\n"
+      return 1
+    end
   end
 
   def has_error?()
@@ -148,6 +163,7 @@ compiler.compile()
 # If we didn't sucessfully compile
 if compiler.has_error? then
   # kill
+  print "killed...\n\n"
   exit 1
 end # otherwise call assembler and linker
 
@@ -163,7 +179,7 @@ else
   build_result = `gcc -o #{dest_binary} "#{temp_name}.o"`
   if build_result.length() > 0 then
     # failed to build
-    print build_result
+    print "#{build_result}\n\n"
   else
     print "Build Successful!\n\n"
   end

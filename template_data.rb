@@ -8,6 +8,15 @@ class TemplateStorage
     @database = load_template_data()
   end
 
+  def self.instance()
+    if @database.nil? then
+      print "\n\nERROR: Loaded instance of TemplateStorage when none was initialized.\n"
+      return nil
+    else
+      return self
+    end
+  end
+
   def load_simple_templates(foldername: "templates/simple_templates")
     templates = []
     require 'yaml'
@@ -46,9 +55,9 @@ class TemplateStorage
   end
 
   # will eventually use my awesome trie to minimize search times
-  def find_match(context, string)
+  def find_match(transaction: nil, line: "")
     @database.each do |template|
-      if template.full_match? context, string then
+      if template.full_match? transaction, line then
         return template
       end
     end
