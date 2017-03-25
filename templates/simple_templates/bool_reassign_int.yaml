@@ -1,0 +1,9 @@
+log_level: INFO
+
+template_type: simple
+
+pattern: |
+  {0:string:bool} = {1:int}
+
+code_translation: |
+  mov [rel {0}], dword {1}

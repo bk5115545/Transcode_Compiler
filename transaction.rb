@@ -170,7 +170,7 @@ class Transaction
 
   def generate_label(name)
     n = name + @tracked["index"].to_s
-    # print "Generated \"#{n}\" as a label name.\n"
+    print "Generated \"#{n}\" as a label name.\n"
     return n
   end
 

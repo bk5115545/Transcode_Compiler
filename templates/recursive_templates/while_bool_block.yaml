@@ -1,0 +1,21 @@
+log_level: DEBUG
+
+template_type: recursive
+
+names: |
+  loop_start
+  condition_end
+
+pattern: |
+  while {0:string:bool}
+    {recurse}
+  done
+
+code_translation: |
+  {loop_start}:
+  mov eax, [{0}]
+  cmp eax, dword 0
+  je {condition_end}
+  {recurse}
+  loop {loop_start}
+  {condition_end}:

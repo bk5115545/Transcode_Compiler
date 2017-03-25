@@ -60,11 +60,11 @@ class Compiler
   end
 
   def has_next_line()
-    return @token_index < @token_source.length()
+    return @token_index < @token_source.length() - 1
   end
 
   def has_line_after(index: )
-    return index < @token_source.length()
+    return index < @token_source.length() - 1
   end
 
   def get_line(index: )

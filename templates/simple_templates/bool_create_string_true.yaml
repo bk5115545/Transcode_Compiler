@@ -1,0 +1,9 @@
+log_level: INFO
+
+template_type: simple
+
+pattern: |
+  bool {0:string} = true
+
+data_translation: |
+  {0}: dd 0

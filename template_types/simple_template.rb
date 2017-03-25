@@ -62,6 +62,9 @@ class SimpleTemplate
       end
         i+=1
     end
+
+    puts "WTF?!?!?!" + @token_pattern.to_s if string.include? "done"
+
     @logger.info "Template match found for \"#{string}\""
     return true
   end

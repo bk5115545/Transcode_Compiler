@@ -1,7 +1,7 @@
 template_type: simple
 
 pattern: |
-  {0:string} = {1:float}
+  {0:string:float} = {1:float}
 
 code_translation: |
   ; {0} = {1}

@@ -1,0 +1,22 @@
+log_level: INFO
+
+template_type: simple
+
+pattern: |
+  print {0:string:bool}
+
+externs: |
+  printf
+
+data_translation: |
+  int_pattern: db "%i", 10, 0
+
+code_translation: |
+  ; rsi = &{0}
+  ; rdi = &int_pattern
+  mov rsi, qword [{0}]
+  mov rdi, int_pattern
+  ; not using vector registers
+  xor rax, rax
+  ; printf(int_pattern, {0});
+  call printf

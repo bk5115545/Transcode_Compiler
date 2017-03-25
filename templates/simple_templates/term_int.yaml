@@ -1,0 +1,11 @@
+template_type: simple
+
+externs: |
+  exit
+
+pattern: |
+  term {0:int}
+
+translation: |
+  mov rdi, {0}
+  call exit
