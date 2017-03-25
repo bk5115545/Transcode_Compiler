@@ -1,8 +1,9 @@
-
-int m= 15
-int k =10
-
+bool b = 1
+int x = 5
+int y = 5
 int z
-
-z=m-k
+if b
+z = x + y
+done
 print z
+term 0

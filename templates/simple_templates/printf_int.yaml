@@ -1,3 +1,7 @@
+log_level: INFO
+
+template_type: simple
+
 pattern: |
   print {0:string:int}
 

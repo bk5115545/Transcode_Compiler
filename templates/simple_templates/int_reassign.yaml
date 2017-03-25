@@ -1,5 +1,7 @@
+template_type: simple
+
 pattern: |
-  {0:string} = {1:int}
+  {0:string:int} = {1:int}
 
 code_translation: |
   ; {0} = {1}

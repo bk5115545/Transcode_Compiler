@@ -1,5 +1,6 @@
 
 require_relative "template_types/simple_template.rb"
+require_relative "template_types/recursive_template.rb"
 
 class TemplateStorage
 
@@ -29,27 +30,46 @@ class TemplateStorage
         next
       end
 
-      templates << SimpleTemplateDefinition.new(
-        pattern: template["pattern"],
-        data_translation: template["data_translation"] || "",
-        code_translation: template["code_translation"] || "",
-        externs: template["externs"] || "",
-        bss_translation: template["bss_translation"] || ""
-      )
+      if template["template_type"].nil? then
+        @compiler.throw_warning "Template with pattern \"#{template["pattern"]}\" did not declare a template_type.  Assuming \"simple\" based on location."
+      elsif template["template_type"] != "simple" then
+        @compiler.throw_warning "Template with pattern \"#{template["pattern"]}\" and type \"#{template["template_type"]}\" is being considered as template_type=simple based on location."
+      end
+
+      templates << SimpleTemplate.new(template)
     end
 
     return templates
   end
 
-  ## will eventually load template files from folder.  hard-coded first couple for quick testing
+  def load_recursive_templates(foldername: "templates/recursive_templates")
+    templates = []
+    require 'yaml'
+
+    yaml_files = Dir.glob(File.join(foldername, "*.yaml"))
+    yaml_files.each do |filename|
+      template = YAML.load_file(filename)
+      if template.nil? then
+        @compiler.throw_warning "Error parsing template at #{filename}. It will be skipped."
+        next
+      end
+
+      if template["template_type"].nil? then
+        @compiler.throw_warning "Template with pattern \"#{template["pattern"]}\" did not declare a template_type.  Assuming \"recursive\" based on location."
+      elsif template["template_type"] != "recursive" then
+        @compiler.throw_warning "Template with pattern \"#{template["pattern"]}\" and type \"#{template["template_type"]}\" is being considered as template_type=recursive based on location."
+      end
+
+      templates << RecursiveTemplate.new(template)
+    end
+
+    return templates
+  end
+
+  ## will eventually construct trie for efficient matching
   def load_template_data()
     templates = load_simple_templates()
-
-    # non-functional
-    # templates << SimpleTemplateDefinition.new(pattern: "string {0:string} = \"{1:string}\"", data_translation: "{0}: db \"{1}\", $")
-
-    # non-functional
-    # templates << SimpleTemplateDefinition.new(pattern: "print_string {0:string}", data_translation: "string_pattern db \"%s\", 10, 0", code_translation: "push rbp\nmov rdi, string_pattern\nmov rsi, {0}\nxor rax, rax\ncall printf\npop rbp")
+    templates.push(*load_recursive_templates())
 
     return templates
   end

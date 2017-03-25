@@ -1,4 +1,7 @@
+template_type: simple
+
 pattern: |
   int {0:string} = {1:int}
+  
 data_translation: |
    {0}: dd {1}

@@ -1,3 +1,5 @@
+template_type: simple
+
 pattern: |
   array:int {0:string}, {1:int}
 

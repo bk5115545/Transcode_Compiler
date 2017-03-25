@@ -1,4 +1,8 @@
+template_type: simple
+
 pattern: |
   float {0:string} = {1:float}
+
 data_translation: |
    {0}: dq {1}
+   

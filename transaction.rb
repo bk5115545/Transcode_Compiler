@@ -2,10 +2,10 @@ class Transaction
 
   require_relative "utils.rb"
 
-  def initialize(compiler:, defaults: {"code" => [], "data" => {}, "externs" => ["exit"], "types" => {}, "bss" => {}, "index" => 0 }, parent: nil)
+  def initialize(compiler:, defaults: {"code" => [], "data" => {}, "externs" => [], "types" => {}, "bss" => {}, "index" => 0}, parent: nil)
     @warnings = []
     @compiler = compiler
-    @tracked = defaults.dup
+    @tracked = defaults
     @parent = parent
   end
 
@@ -22,6 +22,7 @@ class Transaction
       @compiler.add self
     else
       @tracked.each do |key, value|
+        # puts "Adding #{key}=>#{value}"
         @parent.add symbol: key, text: value
       end
     end
@@ -135,14 +136,16 @@ class Transaction
   end
 
   def has_next_line()
-    return @compiler.has_line_after(index: @tracked["index"])
+    return @compiler.has_line_after index: @tracked["index"]
   end
 
   def next_line()
-    return @compiler.get_line(index: @tracked["index"])
+    @tracked["index"] += 1
+    return @compiler.get_line index: @tracked["index"]
   end
 
   def type_resolve(symbol)
+    # puts "Types and data:\t#{@tracked["types"]}\t\t#{@tracked["data"]}"
     @tracked["types"].each { |key, value|
       if value.include? symbol then
         return key.to_sym
@@ -159,6 +162,16 @@ class Transaction
     return @warnings if symbol.to_s == "warnings"
 
     return @tracked[symbol.to_s]
+  end
+
+  def match_line(line: line)
+    return @compiler.match_line(transaction: self, line: line)
+  end
+
+  def generate_label(name)
+    n = name + @tracked["index"].to_s
+    # print "Generated \"#{n}\" as a label name.\n"
+    return n
   end
 
 end

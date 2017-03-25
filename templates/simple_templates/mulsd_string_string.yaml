@@ -1,3 +1,5 @@
+template_type: simple
+
 pattern: |
   {0:string} = {1:string:float} * {2:string:float}
 

@@ -1,3 +1,5 @@
+template_type: simple
+
 pattern: |
   float {0:string}
 

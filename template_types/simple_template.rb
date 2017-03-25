@@ -1,31 +1,30 @@
-class SimpleTemplateDefinition
+class SimpleTemplate
 
   require "logger"
   require_relative "../utils.rb"
+  require_relative "../dynamic_argument.rb"
 
-  attr_reader :translation, :pattern
+  def initialize(yaml)
+    @logger = Logger.new STDOUT, "SimpleTemplate"
+    @logger.level = Logger.const_get yaml["log_level"] || "WARN"
 
-  def initialize(pattern: "", code_translation: "", data_translation: "", externs: "", bss_translation: "", optimization_level: 0)
-    @logger = Logger.new STDOUT, "SimpleTemplateDefinition"
-    @logger.level = Logger::DEBUG
-
-    @pattern = pattern
-    @code_translation = code_translation
+    @pattern = yaml["pattern"]
+    @code_translation = yaml["code_translation"] || ""
 
     @token_pattern = []
 
     @translation_args = Hash.new
 
-    @data_translation = data_translation
+    @data_translation = yaml["data_translation"] || ""
 
-    @bss_translation = bss_translation
+    @bss_translation = yaml["bss_translation"] || ""
 
-    @optimization_level = optimization_level
+    @optimization_level = yaml["optimization_level"] || 0
 
-    @externs = Utils.whitespace_split_ignore(externs)
+    @externs = Utils.whitespace_split_ignore(yaml["externs"] || "")
 
     # generate validation token stream
-    Utils.whitespace_split_ignore(pattern).each do |token|
+    Utils.whitespace_split_ignore(@pattern).each do |token|
       if DynamicArgument.argument? token then
         @token_pattern << DynamicArgument.new(token)
         @translation_args[@token_pattern[-1].name] = @token_pattern[-1].value
@@ -38,6 +37,7 @@ class SimpleTemplateDefinition
 
   def full_match?(transaction, string)
     # split on \b excluding . and ,
+
     token_list = Utils.whitespace_split_ignore(string)
 
     @logger.debug "Matching agianst " + token_list.to_s
@@ -45,6 +45,8 @@ class SimpleTemplateDefinition
 
     if token_list.length != @token_pattern.length then
       @logger.debug "Template for was not satasified.\n"
+      @logger.debug token_list
+      @logger.debug @token_pattern
       return false
     end
     i=0
@@ -60,7 +62,7 @@ class SimpleTemplateDefinition
       end
         i+=1
     end
-    @logger.info "Template match found for \"#{string}\"\n"
+    @logger.info "Template match found for \"#{string}\""
     return true
   end
 
@@ -96,7 +98,7 @@ class SimpleTemplateDefinition
     transaction.commit()
   end
 
-  def translate_internal(transaction, string, line)
+  def translate_internal(transaction, line)
     result = ""
     in_arg = false
     current_parse = ""
@@ -141,7 +143,7 @@ class SimpleTemplateDefinition
   def translate_data(transaction, string)
     @data_translation.split("\n").each do |line|
       next if line.length == 0
-      symbol, result = translate_internal(transaction, string, line)
+      symbol, result = translate_internal(transaction, line)
       transaction.add symbol: "data", text: {symbol.to_s => [@token_pattern[0], result]}
     end
   end
@@ -149,7 +151,7 @@ class SimpleTemplateDefinition
   def translate_bss(transaction, string)
     @bss_translation.split("\n").each do |line|
       next if line.length == 0
-      symbol, result = translate_internal(transaction, string, line)
+      symbol, result = translate_internal(transaction, line)
       transaction.add_bss text: {symbol.to_s => [@token_pattern[0], result]}
     end
   end
@@ -157,93 +159,8 @@ class SimpleTemplateDefinition
   def translate_code(transaction, string)
     @code_translation.split("\n").each do |line|
       next if line.length == 0
-      symbol, result = translate_internal(transaction, string, line)
+      result = translate_internal(transaction, line)[1]
       transaction.add symbol: "code", text: result
     end
-  end
-end
-
-
-
-class DynamicArgument
-
-  require "logger"
-
-  attr_reader :value
-  attr_reader :name
-  attr_reader :type_restriction
-  attr_reader :target
-
-  def initialize(string)
-    @logger = Logger.new STDOUT, "DynamicArgument"
-    @logger.level = Logger::WARN
-
-    @name = nil
-    @type_restriction = nil
-    @value = nil
-    @target = nil
-
-    string = string[1..-2]
-
-    # parse type restriction and name if they exist
-    case string.chars.select { |c| c == ":" }.length
-      when 0
-        @name = string
-
-      when 1
-        parts = string.split(":")
-        @name = parts[0]
-        @type_restriction = parts[1].split("|")
-
-      when 2
-        parts = string.split(":")
-        @name = parts[0]
-        @type_restriction = parts[1].split("|")
-        @target = parts[2].split("|")
-    end
-    @logger.debug "Loaded DynamicArgument with #{@type_restriction}.\n"
-  end
-
-  def valid_type?(transaction, argument)
-    if @type_restriction == nil then
-      return true
-    end
-
-    is_int = Integer(argument) rescue nil
-    is_float = Float(argument) rescue nil
-
-    if is_int != nil || is_float != nil then
-      if !is_int.nil? and @type_restriction.include? "integer" or @type_restriction.include? "int" then
-          @value = argument.to_i
-          return true
-        elsif !is_float.nil? and @type_restriction.include? "float" then
-          @value = argument.to_f
-          return true
-      end
-    elsif @type_restriction.include? "string" or @type_restriction.include? "str" then
-      # no type to lookup
-      if @target.nil? then
-        @logger.debug "Considering \"#{argument}\" as variable/string\n"
-        @value = argument
-        return true
-        # need to make sure this variable name points to the correct type in memory
-      elsif (@target.include? "int" or @target.include? "integer") and transaction.type_resolve(argument) == :int then
-        @value = argument
-        return true
-      elsif @target.include? "float" and transaction.type_resolve(argument) == :float then
-        @value = argument
-        return true
-      end
-    end
-
-    return false
-  end
-
-  def self.argument?(string)
-    if string[0] == "{" && string[-1] == "}" && string[1..-2] != nil then
-      return true
-    end
-
-    return false
   end
 end
