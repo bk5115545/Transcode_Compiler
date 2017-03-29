@@ -1,0 +1,16 @@
+template_type: recursive
+
+names: |
+  condition_end
+
+pattern: |
+  if not {0:string:bool}
+    {recurse}
+  done
+
+code_translation: |
+  mov eax, [{0}]
+  cmp eax, dword 0
+  jne {condition_end}
+  {recurse}
+  {condition_end}:
