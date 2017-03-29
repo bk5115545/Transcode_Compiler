@@ -1,0 +1,9 @@
+template_type: simple
+
+pattern: |
+  {0:string:int} = {1:string:int}
+
+code_translation: |
+  ; {0} = {1}
+  mov eax, dword [{1}]
+  mov [{0}], eax

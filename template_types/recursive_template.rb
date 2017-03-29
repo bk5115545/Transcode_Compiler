@@ -25,7 +25,8 @@ class RecursiveTemplate
 
     @externs = Utils.whitespace_split_ignore(yaml["externs"] || "")
 
-    @names = yaml["names"].split("\n") || []
+    @names = yaml["names"] || ""
+    @names = @names.split "\n"
 
     @template_line_db = {}
 
@@ -153,11 +154,11 @@ class RecursiveTemplate
       end
 
       if in_arg and char == "}" then
-        puts "translating arg name: #{arg_name}"
+        @logger.debug "translating arg name: #{arg_name}"
         # finished parsing translation_arg name
         # so lookup what to replace it with
         if arg_name == "recurse" then
-          puts "ENTERING RECURSE"
+          @logger.debug "ENTERING RECURSE"
           # go ahead and add the current code to the transaction so the nested args are on top of the {recurse}
           # this only matters if {recurse} is before the finalizer (for the love of god it better be)
           transaction.add symbol: "code", text: result
@@ -166,19 +167,19 @@ class RecursiveTemplate
           loop do
             line = Utils.whitespace_split_ignore(transaction.next_line()).join(" ")
 
-            puts "CHECKING: #{line} == #{finalizer} "
+            @logger.debug "CHECKING: #{line} == #{finalizer} "
             if line == finalizer then
-              puts "SKIPPING: #{line}"
+              @logger.debug "SKIPPING: #{line}"
               in_arg = false
               arg_name = ""
               break
             end
-            puts "STARTING RECURSIVE MATCH: #{line}"
+            @logger.debug "STARTING RECURSIVE MATCH: #{line}"
             # save and restore the index so we don't step over lines by having to find a template again
             index = transaction.get_index()
             template = transaction.match_line(line: line)
             transaction.set_index index: index
-            puts "STARTING RECURSIVE TRANSLATE: #{line}"
+            @logger.debug "STARTING RECURSIVE TRANSLATE: #{line}"
             template.translate(transaction, line)
           end
           next
@@ -204,7 +205,7 @@ class RecursiveTemplate
         result << char
       end
     end
-    puts "recursion done"
+    @logger.debug "recursion done"
     transaction.add symbol: "code", text: result
   end
 end

@@ -1,8 +1,8 @@
 template_type: simple
 
 pattern: |
-  {0:string:int} = {1:int}
+  {0:string:float} = {1:string:float}
 
 code_translation: |
   ; {0} = {1}
-  mov [rel {0}], dword {1}
+  movq [rel {0}], qword [{1}]

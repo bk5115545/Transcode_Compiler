@@ -1,0 +1,24 @@
+template_type: simple
+
+names: |
+  equal_to
+  end
+
+pattern: |
+  {0:string:bool} = {1:string:int} != {2:string:int}
+
+code_translation: |
+
+  mov eax, dword [{1}]
+  cmp eax, dword [{2}]
+
+  je {equal_to}
+
+  mov [{0}], dword 1
+
+  jmp {end}
+  {equal_to}:
+
+  mov [{0}], dword 0
+
+  {end}:

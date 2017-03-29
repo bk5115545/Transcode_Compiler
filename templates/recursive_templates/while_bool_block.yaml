@@ -1,5 +1,3 @@
-log_level: DEBUG
-
 template_type: recursive
 
 names: |
@@ -13,9 +11,9 @@ pattern: |
 
 code_translation: |
   {loop_start}:
-  mov eax, [{0}]
-  cmp eax, dword 0
+  mov ecx, [{0}]
+  cmp ecx, dword 0
   je {condition_end}
   {recurse}
-  loop {loop_start}
+  jmp {loop_start}
   {condition_end}:

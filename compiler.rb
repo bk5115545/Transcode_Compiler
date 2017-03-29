@@ -7,7 +7,7 @@ class Compiler
   def initialize(source_file, dest_file)
 
     @logger = Logger.new STDOUT, "Compiler"
-    @logger.level = Logger::DEBUG
+    @logger.level = Logger::WARN
 
     @source_file = source_file
     @dest_file = dest_file
@@ -180,7 +180,7 @@ end
 source_arg = ARGV[0]
 dest_binary = ARGV[1]
 
-temp_name = File.join("build", source_arg.split(".")[0])
+temp_name = File.join("build", source_arg.split(".")[0].split(/\/|\\/)[0])
 
 # Compile to nasm assembly
 compiler = Compiler.new(source_arg, temp_name)
@@ -202,11 +202,5 @@ if assemble_result.length() > 0 then
   # failed to assemble
   print "#{assemble_result}\n\n"
 else
-  build_result = `gcc #{temp_name}.o -o #{dest_binary} `
-  if build_result.length() > 0 then
-    # failed to build
-    print "#{build_result}\n\n"
-  else
-    print "Build Successful!\n\n"
-  end
+  `gcc #{temp_name}.o -o #{dest_binary}`
 end

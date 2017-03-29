@@ -40,7 +40,7 @@ class DynamicArgument
   def self.logging()
     if @@logger.nil? then
       @@logger = Logger.new STDOUT, "DynamicArgument" if @@logger.nil?
-      @@logger.level = Logger::INFO
+      @@logger.level = Logger::WARN
     end
     return @@logger
   end

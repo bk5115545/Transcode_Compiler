@@ -23,6 +23,9 @@ class SimpleTemplate
 
     @externs = Utils.whitespace_split_ignore(yaml["externs"] || "")
 
+    @names = yaml["names"]|| ""
+    @names = @names.split "\n"
+
     # generate validation token stream
     Utils.whitespace_split_ignore(@pattern).each do |token|
       if DynamicArgument.argument? token then
@@ -41,12 +44,10 @@ class SimpleTemplate
     token_list = Utils.whitespace_split_ignore(string)
 
     @logger.debug "Matching agianst " + token_list.to_s
-    @logger.debug "With pattern #{@pattern}"
+    @logger.debug "With pattern #{@pattern}".tr("\n","")
 
     if token_list.length != @token_pattern.length then
       @logger.debug "Template for was not satasified.\n"
-      @logger.debug token_list
-      @logger.debug @token_pattern
       return false
     end
     i=0
@@ -63,8 +64,6 @@ class SimpleTemplate
         i+=1
     end
 
-    puts "WTF?!?!?!" + @token_pattern.to_s if string.include? "done"
-
     @logger.info "Template match found for \"#{string}\""
     return true
   end
@@ -73,11 +72,18 @@ class SimpleTemplate
 
     @externs.each { |extern| transaction.add symbol: "externs", text: extern}
 
+    # fill translation_args with the requested name generations if there are any
+    start_index = transaction.get_index()
+    @names.each do |name|
+      generated_name = transaction.generate_label(name)
+      @translation_args[name + start_index.to_s] = generated_name
+    end
+
     # translate data segment additions first so that we can validate that a name exists in the binary
-    translate_data(transaction, string)
+    translate_data(transaction, string, start_index)
 
     # translate bss segment additions before code is translated so we can validate a name exists in the binary
-    translate_bss(transaction, string)
+    translate_bss(transaction, string, start_index)
 
     # all variables referneced in the token stream are going to be defined in the binary now
 
@@ -96,12 +102,12 @@ class SimpleTemplate
     end
 
     # hashtable has everything we need to fufill this translation
-    translate_code(transaction, string)
+    translate_code(transaction, string, start_index)
 
     transaction.commit()
   end
 
-  def translate_internal(transaction, line)
+  def translate_internal(transaction, line, start_transaction_index)
     result = ""
     in_arg = false
     current_parse = ""
@@ -123,11 +129,14 @@ class SimpleTemplate
       if in_arg and char == "}" then
         case current_parse.chars.select { |c| c == ":" }.length
         when 0
+          current_parse += start_transaction_index.to_s if @names.include? current_parse
           result << @translation_args[current_parse].to_s
         when 1
-          result << @translation_args[current_parse[0]]
+          current_parse += start_transaction_index.to_s if @names.include? current_parse
+          result << @translation_args[current_parse[0]].to_s
         when 2
-          result << @translation_args[current_parse[0]]
+          current_parse += start_transaction_index.to_s if @names.include? current_parse
+          result << @translation_args[current_parse[0]].to_s
         end
         current_parse = ""
         in_arg = false
@@ -143,26 +152,26 @@ class SimpleTemplate
     return symbol, result
   end
 
-  def translate_data(transaction, string)
+  def translate_data(transaction, string, start_index)
     @data_translation.split("\n").each do |line|
       next if line.length == 0
-      symbol, result = translate_internal(transaction, line)
+      symbol, result = translate_internal(transaction, line, start_index)
       transaction.add symbol: "data", text: {symbol.to_s => [@token_pattern[0], result]}
     end
   end
 
-  def translate_bss(transaction, string)
+  def translate_bss(transaction, string, start_index)
     @bss_translation.split("\n").each do |line|
       next if line.length == 0
-      symbol, result = translate_internal(transaction, line)
+      symbol, result = translate_internal(transaction, line, start_index)
       transaction.add_bss text: {symbol.to_s => [@token_pattern[0], result]}
     end
   end
 
-  def translate_code(transaction, string)
+  def translate_code(transaction, string, start_index)
     @code_translation.split("\n").each do |line|
       next if line.length == 0
-      result = translate_internal(transaction, line)[1]
+      result = translate_internal(transaction, line, start_index)[1]
       transaction.add symbol: "code", text: result
     end
   end

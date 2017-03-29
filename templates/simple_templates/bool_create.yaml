@@ -1,7 +1,7 @@
 template_type: simple
 
 pattern: |
-  bool {0:string} = true
+  bool {0:string}
 
 data_translation: |
   {0}: dd 0

@@ -1,0 +1,10 @@
+template_type: simple
+
+pattern: |
+  {0:string} = {1:string:int} - {2:int}
+
+code_translation: |
+
+  mov eax, dword [rel {1}]
+  sub eax, dword {2}
+  mov [{0}], eax

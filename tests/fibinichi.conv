@@ -1,0 +1,20 @@
+bool b = 1
+
+int degree = 18
+
+int fib
+int old
+int new = 1
+
+while b
+  fib = old + new
+  old = new
+  new = fib
+
+  print fib
+
+  degree = degree - 1
+  b = degree > 1
+done
+
+term 0

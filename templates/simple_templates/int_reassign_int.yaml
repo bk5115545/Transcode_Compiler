@@ -1,0 +1,8 @@
+template_type: simple
+
+pattern: |
+  {0:string:int} = {1:int}
+
+code_translation: |
+  ; {0} = {1}
+  mov [{0}], dword {1}

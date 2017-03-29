@@ -1,0 +1,24 @@
+template_type: simple
+
+names: |
+  not_less_than
+  end
+
+pattern: |
+  {0:string:bool} = {1:string:int} < {2:string:int}
+
+code_translation: |
+
+  mov eax, dword [{1}]
+  cmp eax, dword [{2}]
+
+  jge {not_less_than}
+
+  mov [{0}], dword 1
+
+  jmp {end}
+  {not_less_than}:
+
+  mov [{0}], dword 0
+
+  {end}:
