@@ -1,7 +1,7 @@
 template_type: simple
 
 pattern: |
-  {0:string} = {1:int} / {2:string:int}
+  {0:string:int} = {1:int} / {2:string:int}
 
 code_translation: |
 

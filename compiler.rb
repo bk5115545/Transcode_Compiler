@@ -7,7 +7,7 @@ class Compiler
   def initialize(source_file, dest_file)
 
     @logger = Logger.new STDOUT, "Compiler"
-    @logger.level = Logger::WARN
+    @logger.level = Logger::INFO
 
     @source_file = source_file
     @dest_file = dest_file
