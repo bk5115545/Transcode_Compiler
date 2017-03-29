@@ -1,7 +1,5 @@
 arrays (static)
-recursive template parsing
-for loop
-condition (if else)
+  - still need to do array indexing
 function call (no arg passing)
 ? dynamic memory using reserved temp
   - useful for ordering memory operands for vectorized operations
