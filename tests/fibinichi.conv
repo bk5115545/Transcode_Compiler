@@ -5,6 +5,7 @@ int degree = 18
 int fib
 int old
 int new = 1
+print new
 
 while b
   fib = old + new

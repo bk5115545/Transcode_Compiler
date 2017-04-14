@@ -1,37 +1,11 @@
-float num = 4.0
-float pi = 0.0
-bool plus = 1
+int x = 5
+int y = 5
 
-int den = 1
-float den_f = 1.0
-int max_den = 10
+int z
+z = x + y
+x = y + 100
+y = y * 30
 
-float tmp = 0.0
-float two_f = 2.0
-
-bool cont = 1
-
-while cont
-  cont = den < max_den
-
-  print den
-  print den_f
-
-  tmp = num / den_f
-  print tmp
-
-  if plus
-    pi = pi + tmp
-    plus = 0
-  done
-
-  if not plus
-    pi = pi - tmp
-    plus = 1
-  done
-
-  den = den + 2
-  den_f = den_f + two_f
-done
-
-print pi
+print x
+print y
+print z
