@@ -7,5 +7,5 @@ code_translation: |
 
   movq xmm0, qword [rel {2}]
   movq xmm1, qword [rel {1}]
-  divss xmm1, xmm0
+  divsd xmm1, xmm0
   movq [rel {0}], xmm1

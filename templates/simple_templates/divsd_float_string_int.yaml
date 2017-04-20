@@ -1,0 +1,12 @@
+template_type: simple
+
+pattern: |
+  {0:string:float} = {1:float} / {2:string:int}
+
+code_translation: |
+
+  cvtsi2sd xmm0, dword [rel {2}]
+  mov rax, __float64__({1})
+  movq xmm1, rax
+  divsd xmm1, xmm0
+  movq [rel {0}], xmm1

@@ -180,7 +180,7 @@ end
 source_arg = ARGV[0]
 dest_binary = ARGV[1]
 
-temp_name = File.join("build", source_arg.split(".")[0].split(/\/|\\/)[0])
+temp_name = File.join("build", source_arg.split(".")[0].split(/\/|\\/)[-1])
 
 # Compile to nasm assembly
 compiler = Compiler.new(source_arg, temp_name)

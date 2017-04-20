@@ -4,4 +4,4 @@ pattern: |
   bool {0:string} = true
 
 data_translation: |
-  {0}: dd 0
+  {0}: dd 1

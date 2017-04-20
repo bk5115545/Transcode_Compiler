@@ -1,0 +1,42 @@
+int degree = 34
+
+
+int n = 0
+int fact_tmp = 1
+int fact_total = 1
+
+bool cont = true
+bool fact_cont = true
+bool early_term = false
+
+float e = 0
+float e_old = 0
+float e_integral = 0.0
+
+while cont
+  cont = degree > 1
+
+  fact_tmp = n
+  fact_total = 1
+  fact_cont = 1 < fact_tmp
+  while fact_cont
+    fact_cont = 1 < fact_tmp
+    fact_total = fact_total * fact_tmp
+    fact_tmp = fact_tmp - 1
+  done
+  fact_cont = true
+
+  e_integral = 1.0 / fact_total
+  e_old = e
+  e = e + e_integral
+
+  print e
+
+  early_term = e == e_old
+  if early_term
+    term 0
+  done
+
+  n = n + 1
+  degree = degree - 1
+done

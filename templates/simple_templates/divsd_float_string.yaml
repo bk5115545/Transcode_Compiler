@@ -6,6 +6,7 @@ pattern: |
 code_translation: |
 
   movq xmm0, qword [rel {2}]
-  movq xmm1, {1}
-  divss xmm1, xmm0
+  mov rax, __float64__({1})
+  movq xmm1, rax
+  divsd xmm1, xmm0
   movq [rel {0}], xmm1

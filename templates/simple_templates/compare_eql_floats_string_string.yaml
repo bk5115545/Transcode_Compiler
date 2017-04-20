@@ -1,0 +1,25 @@
+template_type: simple
+
+names: |
+  not_equal_to
+  end
+
+pattern: |
+  {0:string:bool} = {1:string:float} == {2:string:float}
+
+code_translation: |
+
+  movq xmm0, qword [{1}]
+  movq xmm1, qword [{2}]
+  cmpeqsd xmm0, xmm1
+
+  jne {not_equal_to}
+
+  mov [{0}], dword 1
+
+  jmp {end}
+  {not_equal_to}:
+
+  mov [{0}], dword 0
+
+  {end}:
