@@ -6,6 +6,17 @@ class VariadicTemplate
 
     # TODO
 
+
+
+    @require_features = yaml["require_features"] || ""
+    @require_features = Utils.whitespace_split_ignore(@require_features)
+
+  end
+
+  def full_match?(transaction, line, arguments:[])
+
+    # TODO
+
   end
 
   def translate(transaction, input_arguments)
@@ -14,6 +25,10 @@ class VariadicTemplate
     # TODO
 
     return output_arguments
+  end
+
+  def list_required_features()
+    return @require_features
   end
 
 end

@@ -28,9 +28,9 @@ class RecursiveTemplate
     @names = yaml["names"] || ""
     @names = @names.split "\n"
 
-    @template_line_db = {}
-
-    @@recursive_nest_level_translate = 0
+    @require_features = yaml["require_features"] || ""
+    @require_features.downcase!
+    @require_features = Utils.whitespace_split_ignore(@require_features)
 
     # generate validation token stream
     @pattern.split("\n").each do |line|
@@ -46,8 +46,7 @@ class RecursiveTemplate
     end
   end
 
-  def full_match?(transaction, line, translate: false)
-    @template_line_db = {}
+  def full_match?(transaction, line)
 
     start_index = transaction.get_index()
 
@@ -83,8 +82,6 @@ class RecursiveTemplate
 
             template = transaction.match_line(line: line)
             if template then
-              # store which template matched which line for translation later
-              @template_line_db[line] = template
               if transaction.has_next_line() then
                 line = transaction.next_line()
                 line = Utils.whitespace_split_ignore(line).join(" ") # try at whitespace neutrality
@@ -142,7 +139,7 @@ class RecursiveTemplate
     # these templates only apply to the code segment right now...
     # TODO research if i need to bring this template to the other segments
 
-    finalizer = @pattern.split("\n")[-1]
+    finalizer = @pattern.split("\n")[-1] # should change this to look for the line after the {recurse} so that if-else-done is also possible
 
     result = ""
     in_arg = false
@@ -207,5 +204,9 @@ class RecursiveTemplate
     end
     @logger.debug "recursion done"
     transaction.add symbol: "code", text: result
+  end
+
+  def list_required_features()
+    return @require_features
   end
 end

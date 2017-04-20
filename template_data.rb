@@ -71,6 +71,16 @@ class TemplateStorage
     templates = load_simple_templates()
     templates.push(*load_recursive_templates())
 
+    # load the supported CPU features
+    features = `cat /proc/cpuinfo | grep "flags" | head -1`.split(":")[1].split(/\s/)
+    puts features
+
+    # prune templates that don't have all of their required features satasified
+    # (required & available).size will == available.size if and only if all the required features already exist in the available features set
+    # this is a set intersection implemented using arrays
+    templates.reject! { |t| (t.list_required_features() | features).size != features.size}
+
+
     return templates
   end
 

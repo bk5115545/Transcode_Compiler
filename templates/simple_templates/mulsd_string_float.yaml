@@ -3,6 +3,10 @@ template_type: simple
 pattern: |
   {0:string} = {1:string:float} * {2:float}
 
+optimization_level: 4
+
+require_features: sse
+
 code_translation: |
 
   movq xmm0, qword [rel {1}]

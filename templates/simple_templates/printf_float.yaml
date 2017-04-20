@@ -9,6 +9,10 @@ externs: |
 data_translation: |
   float_pattern: db "%f", 10, 0
 
+optimization_level: 4
+
+require_features: sse
+
 code_translation: |
   ; rsi = &{0}
   ; rdi = &float_pattern

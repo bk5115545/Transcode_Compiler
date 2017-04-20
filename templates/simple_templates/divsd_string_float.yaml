@@ -1,7 +1,11 @@
 template_type: simple
 
+optimization_level: 4
+
 pattern: |
   {0:string:float} = {1:string:float} / {2:float}
+
+require_features: sse
 
 code_translation: |
 

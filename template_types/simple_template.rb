@@ -26,6 +26,11 @@ class SimpleTemplate
     @names = yaml["names"]|| ""
     @names = @names.split "\n"
 
+
+    @require_features = yaml["require_features"] || ""
+    @require_features.downcase!
+    @require_features = Utils.whitespace_split_ignore(@require_features)
+
     # generate validation token stream
     Utils.whitespace_split_ignore(@pattern).each do |token|
       if DynamicArgument.argument? token then
@@ -174,5 +179,9 @@ class SimpleTemplate
       result = translate_internal(transaction, line, start_index)[1]
       transaction.add symbol: "code", text: result
     end
+  end
+
+  def list_required_features()
+    return @require_features
   end
 end

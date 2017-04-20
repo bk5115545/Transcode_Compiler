@@ -4,6 +4,10 @@ names: |
   not_equal_to
   end
 
+optimization_level: 4
+
+requrie_features: sse2
+
 pattern: |
   {0:string:bool} = {1:string:float} == {2:string:float}
 
