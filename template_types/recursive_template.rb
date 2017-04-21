@@ -9,6 +9,9 @@ class RecursiveTemplate
   def initialize(yaml)
     @logger = Logger.new STDOUT, "RecursiveTemplate"
     @logger.level = Logger.const_get yaml["log_level"] || "WARN"
+    @logger.formatter = proc do |severity, datetime, progname, msg|
+      "#{severity} -- : #{msg}\n"
+    end
 
     @pattern = yaml["pattern"]
     @code_translation = yaml["code_translation"] || ""
@@ -21,7 +24,8 @@ class RecursiveTemplate
 
     @bss_translation = yaml["bss_translation"] || ""
 
-    @optimization_level = yaml["optimization_level"] || 0
+    @optimization_level = yaml["optimization_level"] || "0"
+    @optimization_level = @optimization_level.to_i
 
     @externs = Utils.whitespace_split_ignore(yaml["externs"] || "")
 
@@ -174,10 +178,21 @@ class RecursiveTemplate
             @logger.debug "STARTING RECURSIVE MATCH: #{line}"
             # save and restore the index so we don't step over lines by having to find a template again
             index = transaction.get_index()
-            template = transaction.match_line(line: line)
+            templates = transaction.match_line(line: line)
             transaction.set_index index: index
             @logger.debug "STARTING RECURSIVE TRANSLATE: #{line}"
-            template.translate(transaction, line)
+            templates = templates.sort_by{ |t| t.get_optimization_level() }
+            begin
+              template = templates.pop # returns nil on empty array
+
+              if template.nil? then
+                @kill_bit = 1
+                @logger.fatal "Impossible Translation:#{transaction.get_index()+1}: #{get_line(index: transaction.get_index())}"
+                return
+              end
+
+              translated = template.translate(transaction, line)
+            end while not translated
           end
           next
         end
@@ -204,6 +219,12 @@ class RecursiveTemplate
     end
     @logger.debug "recursion done"
     transaction.add symbol: "code", text: result
+
+    return true
+  end
+
+  def get_optimization_level()
+    return @optimization_level
   end
 
   def list_required_features()

@@ -7,6 +7,9 @@ class SimpleTemplate
   def initialize(yaml)
     @logger = Logger.new STDOUT, "SimpleTemplate"
     @logger.level = Logger.const_get yaml["log_level"] || "WARN"
+    @logger.formatter = proc do |severity, datetime, progname, msg|
+      "#{severity} -- : #{msg}\n"
+    end
 
     @pattern = yaml["pattern"]
     @code_translation = yaml["code_translation"] || ""
@@ -19,7 +22,8 @@ class SimpleTemplate
 
     @bss_translation = yaml["bss_translation"] || ""
 
-    @optimization_level = yaml["optimization_level"] || 0
+    @optimization_level = yaml["optimization_level"] || "0"
+    @optimization_level = @optimization_level.to_i
 
     @externs = Utils.whitespace_split_ignore(yaml["externs"] || "")
 
@@ -110,6 +114,7 @@ class SimpleTemplate
     translate_code(transaction, string, start_index)
 
     transaction.commit()
+    return true
   end
 
   def translate_internal(transaction, line, start_transaction_index)
@@ -179,6 +184,10 @@ class SimpleTemplate
       result = translate_internal(transaction, line, start_index)[1]
       transaction.add symbol: "code", text: result
     end
+  end
+
+  def get_optimization_level()
+    return @optimization_level
   end
 
   def list_required_features()

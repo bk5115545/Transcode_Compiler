@@ -1,3 +1,4 @@
+#! /usr/bin/env ruby
 
 require "pry" # for quick debugging of overall compiler
 require "logger"
@@ -8,6 +9,10 @@ class Compiler
 
     @logger = Logger.new STDOUT, "Compiler"
     @logger.level = Logger::INFO
+
+    @logger.formatter = proc do |severity, datetime, progname, msg|
+      "#{severity} -- : #{msg}\n"
+    end
 
     @source_file = source_file
     @dest_file = dest_file
@@ -125,16 +130,30 @@ class Compiler
         break if line.nil?
         next if line[0] == ";"
         transaction.set_index index: @token_index
-        template = match_line(transaction: transaction, line: line)
-        transaction.set_index index: @token_index
-
-        if !template then
+        templates = match_line(transaction: transaction, line: line) || []
+        if templates.size == 0 then
           @logger.fatal "Invalid Syntax:#{transaction.get_index()+1}: #{get_line(index: transaction.get_index())}"
           @kill_bit = 1
           return
         end
+        # delay resetting the @token_index until after the potential error warning above
+        transaction.set_index index: @token_index
 
-        template.translate(transaction, line)
+        translated = false
+        templates = templates.sort_by{ |t| t.get_optimization_level() }
+        begin
+          template = templates.pop # returns nil on empty array
+
+          if template.nil? then
+            @kill_bit = 1
+            @logger.fatal "Impossible Translation:#{transaction.get_index()+1}: #{get_line(index: transaction.get_index())}"
+            return
+          end
+
+          translated = template.translate(transaction, line)
+        end while not translated
+
+
         @logger.info "Compiler: Done translating #{line}."
         if template then
           @token_index = transaction.get_index()
@@ -157,10 +176,10 @@ class Compiler
 
   def match_line(transaction: nil, line: nil)
     @logger.debug "Searching for template to translate #{line}..."
-    template = @template_database.find_match(transaction: transaction, line: line)
-    @logger.debug "Found template for #{line} !" if template
-    @logger.debug "Could not match \"#{line}\" to any templates." if !template
-    return template
+    templates = @template_database.find_match(transaction: transaction, line: line)
+    @logger.debug "Found template for #{line} !" if templates.size > 0
+    @logger.debug "Could not match \"#{line}\" to any templates." if templates.size == 0
+    return templates
 
   end
 

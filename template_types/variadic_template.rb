@@ -6,7 +6,8 @@ class VariadicTemplate
 
     # TODO
 
-
+    @optimization_level = yaml["optimization_level"] || "0"
+    @optimization_level = @optimization_level.to_i
 
     @require_features = yaml["require_features"] || ""
     @require_features = Utils.whitespace_split_ignore(@require_features)
@@ -25,6 +26,10 @@ class VariadicTemplate
     # TODO
 
     return output_arguments
+  end
+
+  def get_optimization_level()
+    return @optimization_level
   end
 
   def list_required_features()

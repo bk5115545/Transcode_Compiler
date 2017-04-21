@@ -1,3 +1,3 @@
 #! /bin/bash
 
-ruby compiler.rb tests/e.conv a.out
+ruby compiler.rb tests/fibonacci.conv a.out

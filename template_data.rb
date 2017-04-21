@@ -73,7 +73,6 @@ class TemplateStorage
 
     # load the supported CPU features
     features = `cat /proc/cpuinfo | grep "flags" | head -1`.split(":")[1].split(/\s/)
-    puts features
 
     # prune templates that don't have all of their required features satasified
     # (required & available).size will == available.size if and only if all the required features already exist in the available features set
@@ -86,12 +85,13 @@ class TemplateStorage
 
   # will eventually use my awesome trie to minimize search times
   def find_match(transaction: nil, line: "")
+    matches = []
     @database.each do |template|
       if template.full_match? transaction, line then
-        return template
+        matches << template
       end
     end
-    return false
+    return matches
   end
 
   # might do something more complex here
